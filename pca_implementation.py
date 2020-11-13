@@ -6,6 +6,8 @@ Created on Thu Nov 12 13:48:30 2020
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
 
 
 def initialize_random_matrix(shape : tuple):
@@ -53,8 +55,7 @@ def apply_pca(input_matrix : np.ndarray):
     v, u = np.linalg.eig(covariance_matrix)
     
     # finding the eigenvectors with the maxium eigenvalues
-    eigenvectors_list = find_max_eigenvectors(v, u,
-                       input_matrix.shape[1] - 1,input_matrix.shape[0])
+    eigenvectors_list = find_max_eigenvectors(v, u)
     
     # calculating the principle components 
     pc_list = []
@@ -62,10 +63,9 @@ def apply_pca(input_matrix : np.ndarray):
     PC1 = PC1.reshape((PC1.shape[0], 1))
     pc_list.append(PC1)
     
-    if(input_matrix.shape[1] > 2):
-        PC2 = normalized_matrix.dot(eigenvectors_list[1])
-        PC2 = PC2.reshape((PC2.shape[0], 1))
-        pc_list.append(PC2)
+    PC2 = normalized_matrix.dot(eigenvectors_list[1])
+    PC2 = PC2.reshape((PC2.shape[0], 1))
+    pc_list.append(PC2)
 
     return pc_list
     
@@ -110,17 +110,16 @@ def calculate_covariance(input_matrix : np.ndarray):
     return covariance_matrix
 
 
-def find_max_eigenvectors(values, vectors, k, n):
+def find_max_eigenvectors(values, vectors, k = 2):
     """ 
-    This function takes as an input the eigenvalues, eigenvectors, the number of
-    of principle components "k" and the number of examples "n" and uses them
-    to return a list of k eigenvectors which correspond to the highest eigenvalues
+    This function takes as an input the eigenvalues, eigenvectors and the number of
+    of principle components "k" and uses themto return a list of k eigenvectors
+    which correspond to the highest eigenvalues
     
     PARAMS:
         values - The numpy array of the eigenvalues
         vectors - The numpy array of the eigenvectors
         k - The number of principle components
-        n - The number of data points in the datasets
         
     RETURNS:
         eigenvectors_list - The list of eigenvecotrs used for projection
@@ -133,32 +132,79 @@ def find_max_eigenvectors(values, vectors, k, n):
         max_index = values.argmax()
         eigenvectors_list.append(vectors[:, max_index])
         values = np.delete(values, max_index )
+        vectors = np.delete(vectors, max_index, axis= 1)
         count += 1
     
     return eigenvectors_list
     
+
+def apply_pca_scikit(input_matrix):
+    """ 
+    This function applies the PCA algorithm to a numpy array using the SciKit library.
+    I used this function mainly to check my results.
+    
+    PARAMS:
+        input_matrix - The numpy array of shape (n,d) in which PCA will be applied to
+        
+    RETURNS:
+        output_matrix - The numpy array of shape (n,k) after applying PCA 
+        (k < d)
+        
+    """
+    
+    pca = PCA(n_components= 2)
+    pca.fit(input_matrix)
+    output_matrix = pca.transform(input_matrix)
+    
+    return output_matrix
+
+
+def display_2D_scatter_plot(dataset, title, xlabel, ylabel):
+    """ 
+    This function displays the input dataset as a form of scatter plot assuming
+    that the dataset is 2D only.
+    
+    PARAMS:
+        dataset - a numpy array of shape (n,2) which has n data points and
+        only 2 dimensions
+        
+        title - string holding the title of the figure to be displayed
+        
+        xlabel - string holding the label for the x axis of the plot
+        
+        ylabel - string holding the label for the y axis of the plot
+        
+    """
+    plt.figure()
+    
+    if(type(dataset) == list): # Because I store the principle components in a list data structure
+        plt.scatter(dataset[0], dataset[1])
+    else:
+        plt.scatter(dataset[:,0], dataset[:,1])
+      
+    plt.suptitle(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
     
 
 def main():
     
     """ Main entry to the program """
-    
-    while True:
-        
-        input_matrix = initialize_random_matrix((10,3))
-        if(input_matrix is None):
-            break
-        print(input_matrix)
-        
-        output_matrix = apply_pca(input_matrix)
-        print(output_matrix)
-        
-        
 
-        restart = input('\nWould you like to restart? Enter y or n\n')
-        if restart.lower() != 'y':
-            break
-
+    input_matrix = initialize_random_matrix((10000,2))
+    if(input_matrix is None):
+        return
+        
+    display_2D_scatter_plot(input_matrix, "Input Dataset", "X1", "X2")
+        
+    pc_matrix = apply_pca(input_matrix)
+    display_2D_scatter_plot(pc_matrix, "Projected Dataset", "PC1", "PC2")
+        
+    pc_matrix_scikit = apply_pca_scikit(input_matrix)
+    display_2D_scatter_plot(pc_matrix_scikit, "Projected Dataset Using SciKit", "PC1", "PC2")
+        
+        
 
 if __name__ == "__main__":
 	main()
