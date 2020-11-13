@@ -151,10 +151,13 @@ def apply_pca_scikit(input_matrix):
         (k < d)
         
     """
+    # preprocessing step: normalize the data
+    normalized_matrix = normalize_matrix(input_matrix)
     
+    # PCA algorithm steps
     pca = PCA(n_components= 2)
-    pca.fit(input_matrix)
-    output_matrix = pca.transform(input_matrix)
+    pca.fit(normalized_matrix)
+    output_matrix = pca.transform(normalized_matrix)
     
     return output_matrix
 
