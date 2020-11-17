@@ -55,7 +55,7 @@ def apply_pca(input_matrix : np.ndarray):
     v, u = np.linalg.eig(covariance_matrix)
     
     # Sorting the eigenvectors such that the vectors with higher eigenvalues are placed first
-    eigenvectors_list = sort_eigenvectors(v, u)
+    eigenvectors_list = sort_eigenvectors(v, u, k = input_matrix.shape[1]) # values, vectors, number of dimensions
     
     # calculating the principle components and appending them to the pc_list
     pc_list = []
@@ -194,7 +194,7 @@ def main():
     
     """ Main entry to the program """
 
-    input_matrix = initialize_random_matrix((100,5))
+    input_matrix = initialize_random_matrix((1000,5))
     if(input_matrix is None):
         return
         
