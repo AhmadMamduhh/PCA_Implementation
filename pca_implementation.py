@@ -23,7 +23,7 @@ def initialize_random_matrix(shape : tuple):
         
     """
     if(shape[1] == 1):
-        print("You can't reduce the dimensions any further than one dimension")
+        print("Please choose a dimension for the data higher than 1!")
         return None
     
     initialized_matrix = np.random.rand(*shape)
@@ -34,14 +34,14 @@ def initialize_random_matrix(shape : tuple):
 def apply_pca(input_matrix : np.ndarray):
     """ 
     This function applies the steps of the PCA algorithm to a numpy array of
-    shape (n,d) and returns a numpy array of shape (n,k) where k < d
+    shape (n,d) and returns a numpy array of shape (n,k)
     
     PARAMS:
         input_matrix - The numpy array of shape (n,d) in which PCA will be applied to
         
     RETURNS:
         pc_list - A list of k principle components each of shape (n,1)
-        (k = 2 for visualization)
+        (k == d for this script)
         
     """
     
@@ -54,18 +54,17 @@ def apply_pca(input_matrix : np.ndarray):
     # calculating the eigenvalues "v" and eigenvectors "u"
     v, u = np.linalg.eig(covariance_matrix)
     
-    # finding the eigenvectors with the maxium eigenvalues
-    eigenvectors_list = find_max_eigenvectors(v, u)
+    # Sorting the eigenvectors such that the vectors with higher eigenvalues are placed first
+    eigenvectors_list = sort_eigenvectors(v, u)
     
-    # calculating the principle components 
+    # calculating the principle components and appending them to the pc_list
     pc_list = []
-    PC1 = normalized_matrix.dot(eigenvectors_list[0])
-    PC1 = PC1.reshape((PC1.shape[0], 1))
-    pc_list.append(PC1)
     
-    PC2 = normalized_matrix.dot(eigenvectors_list[1])
-    PC2 = PC2.reshape((PC2.shape[0], 1))
-    pc_list.append(PC2)
+    for vector in eigenvectors_list:
+        PC = normalized_matrix.dot(vector)
+        PC = PC.reshape((PC.shape[0], 1))
+        pc_list.append(PC)
+
 
     return pc_list
     
@@ -110,10 +109,10 @@ def calculate_covariance(input_matrix : np.ndarray):
     return covariance_matrix
 
 
-def find_max_eigenvectors(values, vectors, k = 2):
+def sort_eigenvectors(values, vectors, k = 2):
     """ 
     This function takes as an input the eigenvalues, eigenvectors and the number of
-    of principle components "k" and uses themto return a list of k eigenvectors
+    of principle components "k" and uses themto return a sorted list of k eigenvectors
     which correspond to the highest eigenvalues
     
     PARAMS:
@@ -122,7 +121,7 @@ def find_max_eigenvectors(values, vectors, k = 2):
         k - The number of principle components
         
     RETURNS:
-        eigenvectors_list - The list of eigenvecotrs used for projection
+        eigenvectors_list - The list of eigenvectors used for projection
         
     """
     # finding the eigenvectors with the maxium eigenvalues
@@ -148,7 +147,7 @@ def apply_pca_scikit(input_matrix):
         
     RETURNS:
         output_matrix - The numpy array of shape (n,k) after applying PCA 
-        (k < d)
+        (k == d for this script)
         
     """
     # preprocessing step: normalize the data
@@ -195,7 +194,7 @@ def main():
     
     """ Main entry to the program """
 
-    input_matrix = initialize_random_matrix((10000,2))
+    input_matrix = initialize_random_matrix((100,5))
     if(input_matrix is None):
         return
         
