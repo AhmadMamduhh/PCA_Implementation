@@ -57,7 +57,7 @@ def apply_pca(input_matrix : np.ndarray):
     
     # Sorting the eigenvectors such that the vectors with higher eigenvalues are placed first
     eigenvectors_list = sort_eigenvectors(v, u, k = input_matrix.shape[1]) # values, vectors, number of dimensions
-    
+
     # calculating the principle components and appending them to the pc_list
     pc_list = []
     
@@ -159,13 +159,13 @@ def apply_pca_scikit(input_matrix):
     normalized_matrix = normalize_matrix(input_matrix)
     
     # PCA algorithm steps
-    pca = PCA(n_components= input_matrix.shape[1], svd_solver= "randomized")
+    pca = PCA(n_components= input_matrix.shape[1], svd_solver= "auto")
     output_matrix = pca.fit_transform(normalized_matrix)
     
     return output_matrix
 
 
-def display_2D_scatter_plot(dataset, title, xlabel, ylabel, labels):
+def display_2D_scatter_plot(dataset, title, xlabel, ylabel, labels = None):
     """ 
     This function displays the input dataset as a form of scatter plot assuming
     that the dataset is 2D only.
