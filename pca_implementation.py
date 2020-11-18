@@ -7,6 +7,7 @@ Created on Thu Nov 12 13:48:30 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
+from sklearn import datasets
 
 
 
@@ -65,7 +66,6 @@ def apply_pca(input_matrix : np.ndarray):
         PC = PC.reshape((PC.shape[0], 1))
         pc_list.append(PC)
 
-
     return pc_list
     
     
@@ -103,8 +103,13 @@ def calculate_covariance(input_matrix : np.ndarray):
     # calculating the number of data points "n" 
     n = input_matrix.shape[0]
     
+    # subtracting the mean of the observations for each feature from each observation
+    input_matrix -= input_matrix.mean(axis = 0) 
+    
     # calculating the covariance matrix
-    covariance_matrix = (np.dot(input_matrix.T, input_matrix)) / n
+    covariance_matrix = (np.dot(input_matrix.T, input_matrix) ) / (n - 1)
+    
+    # another solution: covariance_matrix = np.cov(input_matrix.T)
     
     return covariance_matrix
 
@@ -154,14 +159,13 @@ def apply_pca_scikit(input_matrix):
     normalized_matrix = normalize_matrix(input_matrix)
     
     # PCA algorithm steps
-    pca = PCA(n_components= 2)
-    pca.fit(normalized_matrix)
-    output_matrix = pca.transform(normalized_matrix)
+    pca = PCA(n_components= input_matrix.shape[1], svd_solver= "randomized")
+    output_matrix = pca.fit_transform(normalized_matrix)
     
     return output_matrix
 
 
-def display_2D_scatter_plot(dataset, title, xlabel, ylabel):
+def display_2D_scatter_plot(dataset, title, xlabel, ylabel, labels):
     """ 
     This function displays the input dataset as a form of scatter plot assuming
     that the dataset is 2D only.
@@ -176,13 +180,16 @@ def display_2D_scatter_plot(dataset, title, xlabel, ylabel):
         
         ylabel - string holding the label for the y axis of the plot
         
+        labels - the target classes for each observation. This is used for visualization
+        
     """
+    
     plt.figure()
     
     if(type(dataset) == list): # Because I store the principle components in a list data structure
-        plt.scatter(dataset[0], dataset[1])
+        plt.scatter(dataset[0], dataset[1], c = labels)
     else:
-        plt.scatter(dataset[:,0], dataset[:,1])
+        plt.scatter(dataset[:,0], dataset[:,1], c = labels)
       
     plt.suptitle(title)
     plt.xlabel(xlabel)
@@ -194,17 +201,27 @@ def main():
     
     """ Main entry to the program """
 
-    input_matrix = initialize_random_matrix((1000,5))
-    if(input_matrix is None):
-        return
+    # input_matrix = initialize_random_matrix((1000,5))  # Random data points
+    # if(input_matrix is None):
+    #    return
+    
+    # Loading the iris dataset
+    iris_dataset = datasets.load_iris()
+    input_matrix = iris_dataset.data
+    labels = iris_dataset.target
+    
+    # Plotting first feature against the second feature
+    display_2D_scatter_plot(input_matrix, "Input Dataset", "X1", "X2", labels)
         
-    display_2D_scatter_plot(input_matrix, "Input Dataset", "X1", "X2")
-        
+    # Applying my implementation of PCA to the Iris dataset 
     pc_matrix = apply_pca(input_matrix)
-    display_2D_scatter_plot(pc_matrix, "Projected Dataset", "PC1", "PC2")
+    
+    # Plotting the two principle components with highest variability
+    display_2D_scatter_plot(pc_matrix, "Projected Dataset", "PC1", "PC2", labels)
         
+    # Same as the previous step but this time it's the PCA function from Sklearn
     pc_matrix_scikit = apply_pca_scikit(input_matrix)
-    display_2D_scatter_plot(pc_matrix_scikit, "Projected Dataset Using SciKit", "PC1", "PC2")
+    display_2D_scatter_plot(pc_matrix_scikit, "Projected Dataset Using SciKit", "PC1", "PC2", labels)
         
         
 
