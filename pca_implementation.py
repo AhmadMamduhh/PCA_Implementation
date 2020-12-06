@@ -180,7 +180,7 @@ def display_2D_scatter_plot(dataset, title, xlabel, ylabel, labels = None):
         
         ylabel - string holding the label for the y axis of the plot
         
-        labels - the target classes for each observation. This is used for visualization
+        labels - the target class for each observation. This is used for visualization
         
     """
     
@@ -219,7 +219,7 @@ def main():
     # Plotting the two principle components with highest variability
     display_2D_scatter_plot(pc_matrix, "Projected Dataset", "PC1", "PC2", labels)
         
-    # Same as the previous step but this time it's the PCA function from Sklearn
+    # Applying Scikit's PCA function to the dataset and plotting its output to test my output
     pc_matrix_scikit = apply_pca_scikit(input_matrix)
     display_2D_scatter_plot(pc_matrix_scikit, "Projected Dataset Using SciKit", "PC1", "PC2", labels)
         
