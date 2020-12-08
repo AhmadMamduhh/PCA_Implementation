@@ -6,9 +6,7 @@ Created on Thu Nov 12 13:48:30 2020
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 from sklearn import datasets
-
 
 
 def initialize_random_matrix(shape : tuple):
@@ -41,7 +39,7 @@ def apply_pca(input_matrix : np.ndarray):
         input_matrix - The numpy array of shape (n,d) in which PCA will be applied to
         
     RETURNS:
-        pc_list - A list of k principle components each of shape (n,1)
+        pc_matrix - A matrix of shape (n,k) containing all principle components
         (k == d for this script)
         
     """
@@ -58,16 +56,18 @@ def apply_pca(input_matrix : np.ndarray):
     # Sorting the eigenvectors such that the vectors with higher eigenvalues are placed first
     eigenvectors_list = sort_eigenvectors(v, u, k = input_matrix.shape[1]) # values, vectors, number of dimensions
 
-    # calculating the principle components and appending them to the pc_list
-    pc_list = []
+    # calculating the principle components and appending them to the pc_matrix
+    n = input_matrix.shape[0] # number of data points
+    pc_matrix = normalized_matrix.dot(eigenvectors_list[0]).reshape((n, 1)) # first principle component
     
-    for vector in eigenvectors_list:
-        PC = normalized_matrix.dot(vector)
-        PC = PC.reshape((PC.shape[0], 1))
-        pc_list.append(PC)
-
-    return pc_list
-    
+    for vector in eigenvectors_list[1:]:
+        # calculating principle component
+        pc = normalized_matrix.dot(vector).reshape((n, 1))
+        
+        # appending pc to the principle component matrix  
+        pc_matrix = np.append(pc_matrix, pc, axis= 1)
+        
+    return pc_matrix
     
     
 def normalize_matrix(input_matrix : np.ndarray):
@@ -129,7 +129,7 @@ def sort_eigenvectors(values, vectors, k = 2):
         eigenvectors_list - The list of eigenvectors used for projection
         
     """
-    # finding the eigenvectors with the maxium eigenvalues
+    # finding the eigenvectors with the maximum eigenvalues
     eigenvectors_list = []
     count = 0
     while count < k:
@@ -141,29 +141,6 @@ def sort_eigenvectors(values, vectors, k = 2):
     
     return eigenvectors_list
     
-
-def apply_pca_scikit(input_matrix):
-    """ 
-    This function applies the PCA algorithm to a numpy array using the SciKit library.
-    I used this function mainly to check my results.
-    
-    PARAMS:
-        input_matrix - The numpy array of shape (n,d) in which PCA will be applied to
-        
-    RETURNS:
-        output_matrix - The numpy array of shape (n,k) after applying PCA 
-        (k == d for this script)
-        
-    """
-    # preprocessing step: normalize the data
-    normalized_matrix = normalize_matrix(input_matrix)
-    
-    # PCA algorithm steps
-    pca = PCA(n_components= input_matrix.shape[1], svd_solver= "auto")
-    output_matrix = pca.fit_transform(normalized_matrix)
-    
-    return output_matrix
-
 
 def display_2D_scatter_plot(dataset, title, xlabel, ylabel, labels = None):
     """ 
@@ -185,12 +162,7 @@ def display_2D_scatter_plot(dataset, title, xlabel, ylabel, labels = None):
     """
     
     plt.figure()
-    
-    if(type(dataset) == list): # Because I store the principle components in a list data structure
-        plt.scatter(dataset[0], dataset[1], c = labels)
-    else:
-        plt.scatter(dataset[:,0], dataset[:,1], c = labels)
-      
+    plt.scatter(dataset[:,0], dataset[:,1], c = labels)
     plt.suptitle(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -203,7 +175,8 @@ def main():
 
     # input_matrix = initialize_random_matrix((1000,5))  # Random data points
     # if(input_matrix is None):
-    #    return
+    #      return
+    # labels = None
     
     # Loading the iris dataset
     iris_dataset = datasets.load_iris()
@@ -213,18 +186,13 @@ def main():
     # Plotting first feature against the second feature
     display_2D_scatter_plot(input_matrix, "Input Dataset", "X1", "X2", labels)
         
-    # Applying my implementation of PCA to the Iris dataset 
+    # Applying my implementation of PCA to the input dataset 
     pc_matrix = apply_pca(input_matrix)
     
     # Plotting the two principle components with highest variability
     display_2D_scatter_plot(pc_matrix, "Projected Dataset", "PC1", "PC2", labels)
         
-    # Applying Scikit's PCA function to the dataset and plotting its output to test my output
-    pc_matrix_scikit = apply_pca_scikit(input_matrix)
-    display_2D_scatter_plot(pc_matrix_scikit, "Projected Dataset Using SciKit", "PC1", "PC2", labels)
-        
-        
-
+           
 if __name__ == "__main__":
 	main()
 
